@@ -5,7 +5,12 @@ edition = "2024"
 
 [dependencies]
 bevy = { version = "0.16.0", features = ["dynamic_linking"] }
-
+# bevy_rand
+rand_core = "0.9"
+bevy_rand = "0.11"
+bevy_prng = { version = "0.11", features = ["wyrand"] }
+# bevy_ecs_tilemap
+bevy_ecs_tilemap = { version = "0.16.0", features = ["render"] }
 # https://bevyengine.org/learn/quick-start/getting-started/setup/#improve-runtime-performance-optional
 log = { version = "*", features = ["max_level_debug", "release_max_level_warn"] }
 
