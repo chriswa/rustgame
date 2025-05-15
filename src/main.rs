@@ -5,6 +5,15 @@ use bevy_rand::prelude::EntropyPlugin;
 
 mod player;
 mod tilemap;
+mod tileset;
+
+use tilemap::Tilemap;
+use tileset::Tileset;
+
+struct SamplePlugin;
+impl Plugin for SamplePlugin {
+    fn build(&self, _app: &mut App) {}
+}
 
 fn get_window_config() -> WindowPlugin {
     WindowPlugin {
@@ -28,8 +37,16 @@ fn main() {
         .add_plugins(DefaultPlugins.set(get_window_config()))
         .add_plugins(EntropyPlugin::<WyRand>::default())
         .add_plugins(TilemapPlugin)
+        .add_plugins(SamplePlugin)
         .insert_resource(Time::<Fixed>::from_seconds(1.0 / 60.0))
-        .add_systems(Startup, (player::setup, tilemap::setup))
+        .add_systems(
+            Startup,
+            (
+                setup_tileset,
+                setup_tilemap.after(setup_tileset),
+                player::setup,
+            ),
+        )
         .add_systems(
             FixedUpdate,
             (
@@ -39,4 +56,25 @@ fn main() {
             ),
         )
         .run();
+}
+
+fn setup_tileset(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
+    // Create the tileset
+    let tileset = Tileset::new(&mut images);
+    commands.insert_resource(tileset);
+}
+
+fn setup_tilemap(mut commands: Commands, tileset: Res<Tileset>) {
+    // Create a tilemap using the tileset
+    let map_size = TilemapSize { x: 32, y: 32 };
+    let texture_indices = (0..(map_size.x * map_size.y)).map(|i| (i % 3) as u32);
+    let transform = Transform::from_xyz(0.0, 0.0, 0.0).with_scale(Vec3::splat(5.0));
+
+    let _tilemap = Tilemap::new(
+        &mut commands,
+        tileset.into_inner(),
+        map_size,
+        texture_indices,
+        transform,
+    );
 }
